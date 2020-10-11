@@ -2,11 +2,8 @@
 #include <bits/stdc++.h>
 #include <unordered_set>
 
-#pragma region Definitions
 #define EPSILON "epsilon"
 #define ENDOFLINE "$"
-#pragma endregion
-
 
 class NoTerminal
 {
@@ -228,11 +225,37 @@ private:
 	NoterminalElements noterminal_elements;
 	First first;
 
-	std::string nextToken(int i, int branch_size, std::vector<std::string> branch) {
+	std::string nextToken(int i, int branch_size, std::vector<std::string>& branch) {
 		std::string next_token;
 		if (i + 1 < branch_size) next_token = branch[i + 1];
 		else next_token = EPSILON;
 		return next_token;
+	}
+
+
+	bool findNexBeta(std::unordered_set<std::string>& solution, int i, int branch_size, std::vector<std::string>& branch) {
+		bool hasEpsilon = true;
+		for (i; i < branch_size; i++) {
+			std::string next_token = nextToken(i, branch_size, branch);
+			if (noterminal_elements.isNoTerminal(next_token))
+			{
+				FirstElement first_noterminal_element = first.find(next_token);
+				solution.insert(first_noterminal_element.elements.begin(), first_noterminal_element.elements.end());
+				if (!first_noterminal_element.epsilon) {
+					hasEpsilon = false;
+					break;
+				}
+			}
+			else
+			{
+				if (next_token != EPSILON) {
+					solution.insert(next_token);
+					hasEpsilon = false;
+					break;
+				}
+			}
+		}
+		return hasEpsilon;
 	}
 
 	void findNextNoTerminal(NoTerminal& noterminal, std::unordered_set<std::string>& solution, std::unordered_set<std::string>& ignore)
@@ -258,24 +281,7 @@ private:
 					//TODOMAIN: BOTTLENECK
 					if (token == name)
 					{
-						std::string next_token = nextToken(i, branch_size, branch);
-						bool hasEpsilon = false;
-						if (noterminal_elements.isNoTerminal(next_token))
-						{
-							NoTerminal& next_token_noterminal = noterminal_elements.map_noterminal[next_token];
-							//FirstElement& elementFirst = first.map_first[next_token];
-							FirstElement elementFirst = first.find(next_token);
-							hasEpsilon = elementFirst.epsilon;
-							solution.insert(elementFirst.elements.begin(), elementFirst.elements.end());
-						}
-						else
-						{
-							if (next_token == EPSILON)
-								hasEpsilon = true;
-							else
-								solution.insert(next_token);
-						}
-
+						bool hasEpsilon = findNexBeta(solution, i, branch_size, branch);
 						if (hasEpsilon)
 						{
 							findNextNoTerminal(noterminal_search, solution, ignore);
@@ -287,6 +293,7 @@ private:
 	}
 
 };
+
 
 class Prediction {
 private:
@@ -306,9 +313,9 @@ private:
 				for (auto& token : branch) {
 					if (noterminal_elements.isNoTerminal(token))
 					{
-						FirstElement noterminal_token = first.find(token);
-						predictionElement.insert(noterminal_token.elements.begin(), noterminal_token.elements.end());
-						if (!noterminal_token.epsilon)
+						FirstElement first_noterminal_element = first.find(token);
+						predictionElement.insert(first_noterminal_element.elements.begin(), first_noterminal_element.elements.end());
+						if (!first_noterminal_element.epsilon)
 						{
 							epsilon = false;
 							break;
@@ -339,12 +346,14 @@ public:
 		Next next(noterminal_elements, first);
 		findSets(noterminal_elements, first, next, number_of_rules);
 	}
-	
+
 	std::vector<std::unordered_set<std::string>> getPredictionSets() {
 		return prediction;
 	}
 
 };
+
+
 
 void addElementNoterminal(std::string& s, std::map<std::string, NoTerminal>& map_noterminal, std::map<std::string, NoTerminal>::iterator& it, int counter) {
 	int n = s.size();
@@ -402,6 +411,7 @@ int main()
 			std::cout << token << " ";
 		std::cout << '\n';
 	}
-	
+
 	return 0;
 }
+
