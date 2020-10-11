@@ -1,9 +1,9 @@
-#define _CRT_SECURE_NO_WARNINGS
 #include <bits/stdc++.h>
 #include <unordered_set>
 
 #define EPSILON "epsilon"
 #define ENDOFLINE "$"
+
 
 class NoTerminal
 {
@@ -179,7 +179,6 @@ public:
 };
 
 
-
 class NextElement
 {
 public:
@@ -233,7 +232,7 @@ private:
 	}
 
 
-	bool findNexBeta(std::unordered_set<std::string>& solution, int i, int branch_size, std::vector<std::string>& branch) {
+	bool findFirstBeta(std::unordered_set<std::string>& solution, int i, int branch_size, std::vector<std::string>& branch) {
 		bool hasEpsilon = true;
 		for (i; i < branch_size; i++) {
 			std::string next_token = nextToken(i, branch_size, branch);
@@ -277,15 +276,13 @@ private:
 				int branch_size = branch.size();
 				for (int i = 0; i < branch_size; i++)
 				{
-					std::string& token = branch[i];
 					//TODOMAIN: BOTTLENECK
+					std::string& token = branch[i];
 					if (token == name)
 					{
-						bool hasEpsilon = findNexBeta(solution, i, branch_size, branch);
+						bool hasEpsilon = findFirstBeta(solution, i, branch_size, branch);
 						if (hasEpsilon)
-						{
 							findNextNoTerminal(noterminal_search, solution, ignore);
-						}
 					}
 				}
 			}
@@ -309,12 +306,12 @@ private:
 			for (int num_branch = 0; num_branch < sizeBranches; num_branch++) {
 				auto& branch = branches[num_branch];
 				bool epsilon = true;
-				auto& predictionElement = prediction[noterminal.posBranchs[num_branch]];
+				auto& prediction_element = prediction[noterminal.posBranchs[num_branch]];
 				for (auto& token : branch) {
 					if (noterminal_elements.isNoTerminal(token))
 					{
 						FirstElement first_noterminal_element = first.find(token);
-						predictionElement.insert(first_noterminal_element.elements.begin(), first_noterminal_element.elements.end());
+						prediction_element.insert(first_noterminal_element.elements.begin(), first_noterminal_element.elements.end());
 						if (!first_noterminal_element.epsilon)
 						{
 							epsilon = false;
@@ -325,7 +322,7 @@ private:
 					{
 						if (token != EPSILON)
 						{
-							predictionElement.insert(token);
+							prediction_element.insert(token);
 							epsilon = false;
 							break;
 						}
@@ -333,8 +330,8 @@ private:
 				}
 				if (epsilon)
 				{
-					NextElement nextNoTerminal = next.find(name);
-					predictionElement.insert(nextNoTerminal.elements.begin(), nextNoTerminal.elements.end());
+					NextElement next_no_terminal = next.find(name);
+					prediction_element.insert(next_no_terminal.elements.begin(), next_no_terminal.elements.end());
 				}
 			}
 		}
@@ -352,7 +349,6 @@ public:
 	}
 
 };
-
 
 
 void addElementNoterminal(std::string& s, std::map<std::string, NoTerminal>& map_noterminal, std::map<std::string, NoTerminal>::iterator& it, int counter) {
